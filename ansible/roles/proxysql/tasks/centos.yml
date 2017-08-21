@@ -10,7 +10,7 @@
 
 - name: Install proxysql RPM 
   become: true
-   shell: rpm -Uvh https://github.com/sysown/proxysql/releases/download/v1.4.1/proxysql-1.4.1-1-centos7.x86_64.rpm
+  shell: rpm -ivh https://github.com/sysown/proxysql/releases/download/v1.4.1/proxysql-1.4.1-1-centos7.x86_64.rpm
   tags: [proxysql]
 
  

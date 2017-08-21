@@ -1,0 +1,24 @@
+- name: Add Mysql repository
+  shell: rpm -Uvh http://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+  args:
+    creates: /etc/yum.repos.d/mysql-community.repo
+  tags: [mysql]
+
+- name: Install Mysql RPM dependencies
+  become: true
+  yum: name={{ item }} state=present
+  with_items:
+    - net-tools
+    - vim
+    - telnet
+    - lsof
+    - mysql-community-libs-compat
+    - mysql-community-server 
+  tags: [mysql]
+
+
+- name: mysql service is restarted
+  service:
+    name: mysql
+    state: restarted
+  tags: [mysql]

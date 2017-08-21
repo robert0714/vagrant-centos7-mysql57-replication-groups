@@ -1,0 +1,16 @@
+- name: Install proxysql RPM dependencies
+  become: true
+  yum: name={{ item }} state=present
+  with_items:
+    - glib2-devel
+    - mysql-community-devel
+    - openssl-devel
+    - perl-DBD-MySQL
+  tags: [proxysql]
+
+- name: Install proxysql RPM 
+  become: true
+   shell: rpm -Uvh https://github.com/sysown/proxysql/releases/download/v1.4.1/proxysql-1.4.1-1-centos7.x86_64.rpm
+  tags: [proxysql]
+
+ 

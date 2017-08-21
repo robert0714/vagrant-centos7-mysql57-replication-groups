@@ -29,7 +29,7 @@ mysql> ALTER USER 'root'@'localhost' IDENTIFIED BY 'MyNewPass4!';
 ## Configuring MySQL
 https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-centos-7
 
-##Testing MySQL
+## Testing MySQL
 ```
 mysqladmin -u root -p version
 ```

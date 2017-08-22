@@ -19,6 +19,6 @@
 
 - name: mysql service is restarted
   service:
-    name: mysql
+    name: mysqld
     state: restarted
   tags: [mysql]

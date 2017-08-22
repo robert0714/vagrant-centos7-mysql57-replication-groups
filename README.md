@@ -49,7 +49,7 @@ Without going into details on how to configure mysqld in the nodes (this is outs
 First, let's create the root user to connect from app:
 ```
 vagrant@app:~$ for i in 1 2 3 ; do
-ssh mysql-0$i -- 'mysql -uroot -proot -e "GRANT ALL PRIVILEGES ON *.* TO root@app IDENTIFIED BY \"root\" WITH GRANT OPTION" -NB'
+ssh mysql-0$i -- 'mysql -uroot -proot -e "GRANT ALL PRIVILEGES ON *.* TO root@app IDENTIFIED BY \"MyNewPass4!\" WITH GRANT OPTION" -NB'
 done
 Warning: Using a password on the command line interface can be insecure.
 Warning: Using a password on the command line interface can be insecure.

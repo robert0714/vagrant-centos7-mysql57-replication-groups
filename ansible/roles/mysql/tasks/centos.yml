@@ -1,10 +1,36 @@
-- name: Add Mysql repository
-  shell: rpm -Uvh http://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+# - name: Add Mysql repository
+#   shell: rpm -Uvh http://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+#   args:
+#     creates: /etc/yum.repos.d/mysql-community.repo
+#   tags: [mysql]
+
+- name: Add Percona Server Mysql repository
+  shell: rpm -Uvh http://www.percona.com/downloads/percona-release/redhat/0.1-4/percona-release-0.1-4.noarch.rpm
   args:
-    creates: /etc/yum.repos.d/mysql-community.repo
+    creates: /etc/yum.repos.d/percona.repo
   tags: [mysql]
 
-- name: Install Mysql RPM dependencies
+
+# - name: Install Mysql RPM dependencies
+#   become: true
+#   yum: name={{ item }} state=present
+#   with_items:
+#     - net-tools
+#     - vim
+#     - telnet
+#     - lsof
+#     - python-pip
+#     - python-virtualenv
+#     - mysql-community-common
+#     - mysql-community-libs
+#     - mysql-community-client
+#     - mysql-community-server 
+#     - mysql-community-devel
+#     - perl-DBD-MySQL
+#     - gcc
+#   tags: [mysql]
+
+- name: Install Percona Mysql RPM dependencies
   become: true
   yum: name={{ item }} state=present
   with_items:
@@ -14,11 +40,7 @@
     - lsof
     - python-pip
     - python-virtualenv
-    - mysql-community-common
-    - mysql-community-libs
-    - mysql-community-client
-    - mysql-community-server 
-    - mysql-community-devel
+    - Percona-Server-server-57
     - perl-DBD-MySQL
     - gcc
   tags: [mysql]

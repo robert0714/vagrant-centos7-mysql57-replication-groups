@@ -1,13 +1,9 @@
 # - name: Add Mysql repository
-#   shell: rpm -Uvh http://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
-#   args:
-#     creates: /etc/yum.repos.d/mysql-community.repo
+#   yum: name=http://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
 #   tags: [mysql]
 
 - name: Add Percona Server Mysql repository
-  shell: rpm -Uvh http://www.percona.com/downloads/percona-release/redhat/0.1-4/percona-release-0.1-4.noarch.rpm
-  args:
-    creates: /etc/yum.repos.d/percona.repo
+  yum: name=http://www.percona.com/downloads/percona-release/redhat/0.1-4/percona-release-0.1-4.noarch.rpm  
   tags: [mysql]
 
 
@@ -41,17 +37,25 @@
     - python-pip
     - python-virtualenv
     - Percona-Server-server-57
+    - Percona-Server-client-57
+    - Percona-Server-shared-57
+    - Percona-Server-devel-57
     - perl-DBD-MySQL
     - gcc
   tags: [mysql]
 
-- name:  pip  install --upgrade pip
-  shell: pip  install --upgrade pip
+- name:  pip  install pip
+  become: true
+  pip:  
+    name: pip
+    state: latest
   ignore_errors: yes
   tags: [mysql]
 
 - name:  pip  install MySQL-python
-  shell: pip  install MySQL-python
+  become: true
+  pip:
+    name:  MySQL-python
   ignore_errors: yes
   tags: [mysql]
 
@@ -78,51 +82,47 @@
     mode: 0644
   tags: [mysql]
 
-- name: mysql service is restarted [2]
-  service:
-    name: mysqld
-    state: restarted
+- name: whoami 
+  become: false
+  shell: whoami
+  register: linux_user
   tags: [mysql]
+
+- name: id -g -n
+  become: false
+  shell: id -g -n
+  register: linux_group
+  tags: [mysql]
+
+# https://www.rennetti.com/howto/139/mysql-5-7-on-ansible  
+- name: Set new password from temporary password
+  shell: 'mysql -e "SET PASSWORD = PASSWORD(''{{ mysql_root_pass }}'');" --connect-expired-password -uroot -p"{{ mysql_temp_pass.stdout }}"'
+  ignore_errors: True
+  tags: [mysql]
+
+- name: "MySQL: template: .my.cnf file to /home/{{ linux_user.stdout }}"
+  become: false
+  template:
+    src: temp_my.cnf.j2
+    dest: "~/.my.cnf"
+    owner: "{{ linux_user.stdout }}"
+    group: "{{ linux_group.stdout }}"
+    mode: 0600
+  tags: [mysql]
+
 
 - name: Set root password
+  become: false
   mysql_user: 
-      login_user: root
-      login_password: "{{ mysql_temp_pass.stdout }}"
       name: root
-      host: localhost
       password: "{{ mysql_root_pass }}"
-      state: present
-  ignore_errors: True
-  tags: [mysql]
-
-- name: Override .my.cnf file
-  template: 
-    src: new_my.cnf.j2
-    dest: /root/.my.cnf
-#    dest: /etc/my.cnf 
-    owner: root 
-    group: root 
-    mode: 0644
-  tags: [mysql]
-
-- name: mysql service is restarted [3]
-  service:
-    name: mysqld
-    state: restarted
-  tags: [mysql]
-
-#- name: Set root password
-#  shell:  mysql -uroot -proot -e "GRANT ALL PRIVILEGES ON *.* TO root@app IDENTIFIED BY \"{{ mysql_root_pass }}\" WITH GRANT OPTION" -NB
-#  ignore_errors: True
-#  tags: [mysql]
-
-- name: Set priv
-  mysql_user:
-      login_user: root
-      login_password: "{{ mysql_root_pass }}"
-      name: root
-      host: localhost
       priv: '*.*:ALL,GRANT'
+      sql_log_bin: no
       state: present
-  ignore_errors: True
+      host: "{{ item }}"
+  with_items:
+     - "{{ ansible_hostname }}"
+     - 127.0.0.1
+     - ::1
+     - localhost
   tags: [mysql]

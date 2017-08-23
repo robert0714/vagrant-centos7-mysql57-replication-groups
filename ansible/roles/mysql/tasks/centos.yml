@@ -76,7 +76,6 @@
   template: 
     src: temp_my.cnf.j2 
     dest: /root/.my.cnf
-#    dest: /etc/my.cnf 
     owner: root 
     group: root 
     mode: 0644
@@ -125,4 +124,5 @@
      - 127.0.0.1
      - ::1
      - localhost
+     - '%'
   tags: [mysql]

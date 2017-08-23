@@ -33,7 +33,7 @@
   ignore_errors: yes
   tags: [mysql]
 
-- name: mysql service is restarted
+- name: mysql service is restarted [1]
   service:
     name: mysqld
     state: restarted
@@ -49,11 +49,17 @@
 - name: Copy .my.cnf file
   template: 
     src: temp_my.cnf.j2 
-#   dest: /root/.my.cnf
-    dest: /etc/my.cnf 
+    dest: /root/.my.cnf
+#    dest: /etc/my.cnf 
     owner: root 
     group: root 
     mode: 0644
+  tags: [mysql]
+
+- name: mysql service is restarted [2]
+  service:
+    name: mysqld
+    state: restarted
   tags: [mysql]
 
 - name: Set root password
@@ -70,11 +76,17 @@
 - name: Override .my.cnf file
   template: 
     src: new_my.cnf.j2
-#   dest: /root/.my.cnf
-    dest: /etc/my.cnf 
+    dest: /root/.my.cnf
+#    dest: /etc/my.cnf 
     owner: root 
     group: root 
     mode: 0644
+  tags: [mysql]
+
+- name: mysql service is restarted [3]
+  service:
+    name: mysqld
+    state: restarted
   tags: [mysql]
 
 #- name: Set root password

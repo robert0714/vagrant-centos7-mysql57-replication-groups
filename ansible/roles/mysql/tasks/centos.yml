@@ -12,13 +12,72 @@
     - vim
     - telnet
     - lsof
-    - mysql-community-libs-compat
+    - python-pip
+    - python-virtualenv
+    - mysql-community-common
+    - mysql-community-libs
+    - mysql-community-client
     - mysql-community-server 
+    - mysql-community-devel
+    - perl-DBD-MySQL
+    - gcc
   tags: [mysql]
 
+- name:  pip  install --upgrade pip
+  shell: pip  install --upgrade pip
+  ignore_errors: yes
+  tags: [mysql]
+
+- name:  pip  install MySQL-python
+  shell: pip  install MySQL-python
+  ignore_errors: yes
+  tags: [mysql]
 
 - name: mysql service is restarted
   service:
     name: mysqld
     state: restarted
+  tags: [mysql]
+
+
+- name: Get percona server password
+  shell: cat /var/log/mysqld.log | grep "temporary password" | awk '{print $11}'
+  register: mysql_temp_pass
+  tags: [mysql]
+
+
+- name: Copy .my.cnf file
+  template: 
+    src: temp_my.cnf.j2 
+    dest: /root/.my.cnf 
+    owner: root 
+    group: root 
+    mode: 0644
+  tags: [mysql]
+
+- name: Set root password
+  mysql_user: 
+      login_user: root
+      login_password: "{{ mysql_temp_pass.stdout }}"
+      name: root
+      host: localhost
+      password: "{{ mysql_root_pass }}"
+      state: present
+  ignore_errors: True
+  tags: [mysql]
+
+- name: Set root password
+  shell:  mysql -uroot -proot -e "GRANT ALL PRIVILEGES ON *.* TO root@app IDENTIFIED BY \"{{ mysql_root_pass }}\" WITH GRANT OPTION" -NB
+  ignore_errors: True
+  tags: [mysql]
+
+- name: Set priv
+  mysql_user:
+      login_user: root
+      login_password: "{{ mysql_root_pass }}"
+      name: root
+      host: localhost
+      priv: '*.*:ALL,GRANT'
+      state: present
+  ignore_errors: True
   tags: [mysql]

@@ -22,6 +22,10 @@ fi
 
 yum  install -y ansible
 yum  install -y jq
+yum  install -y gcc
+pip  install --upgrade pip
+pip  install MySQL-python
+
 
 cp /vagrant/ansible/ansible.cfg /etc/ansible/ansible.cfg
 

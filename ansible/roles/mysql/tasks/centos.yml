@@ -1,32 +1,13 @@
-# - name: Add Mysql repository
-#   yum: name=http://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
-#   tags: [mysql]
-
-- name: Add Percona Server Mysql repository
-  yum: name=http://www.percona.com/downloads/percona-release/redhat/0.1-4/percona-release-0.1-4.noarch.rpm  
+- name: Add Mysql repository
+  yum: name=http://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
   tags: [mysql]
 
-
-# - name: Install Mysql RPM dependencies
-#   become: true
-#   yum: name={{ item }} state=present
-#   with_items:
-#     - net-tools
-#     - vim
-#     - telnet
-#     - lsof
-#     - python-pip
-#     - python-virtualenv
-#     - mysql-community-common
-#     - mysql-community-libs
-#     - mysql-community-client
-#     - mysql-community-server 
-#     - mysql-community-devel
-#     - perl-DBD-MySQL
-#     - gcc
+# - name: Add Percona Server Mysql repository
+#   yum: name=http://www.percona.com/downloads/percona-release/redhat/0.1-4/percona-release-0.1-4.noarch.rpm  
 #   tags: [mysql]
 
-- name: Install Percona Mysql RPM dependencies
+
+- name: Install Mysql RPM dependencies
   become: true
   yum: name={{ item }} state=present
   with_items:
@@ -36,14 +17,34 @@
     - lsof
     - python-pip
     - python-virtualenv
-    - Percona-Server-server-57
-    - Percona-Server-client-57
-    - Percona-Server-shared-57
-    - Percona-Server-devel-57
+    - mysql-community-common
+    - mysql-community-libs
+    - mysql-community-client
+    - mysql-community-server 
+    - mysql-community-devel
     - perl-DBD-MySQL
     - gcc
     - sshpass
   tags: [mysql]
+
+# - name: Install Percona Mysql RPM dependencies
+#   become: true
+#   yum: name={{ item }} state=present
+#   with_items:
+#     - net-tools
+#     - vim
+#     - telnet
+#     - lsof
+#     - python-pip
+#     - python-virtualenv
+#     - Percona-Server-server-57
+#     - Percona-Server-client-57
+#     - Percona-Server-shared-57
+#     - Percona-Server-devel-57
+#     - perl-DBD-MySQL
+#     - gcc
+#     - sshpass
+#   tags: [mysql]
 
 - name:  pip  install pip
   become: true
@@ -66,6 +67,13 @@
     state: restarted
   tags: [mysql]
 
+# - name: Copy my.cnf to master
+#   copy: src="roles/dbtier/files/my.cnf.master" dest="/etc/percona-server.conf.d/mysqld.cnf" owner=root group=root mode=0644
+#   when: hostname.stdout.find('db-master') == 0
+ 
+# - name: Copy my.cnf to slave
+#   copy: src="roles/dbtier/files/my.cnf.slave" dest="/etc/percona-server.conf.d/mysqld.cnf" owner=root group=root mode=0644
+#   when: hostname.stdout.find('db-slave') == 0
 
 - name: Get percona server password
   shell: cat /var/log/mysqld.log | grep "temporary password" | awk '{print $11}'

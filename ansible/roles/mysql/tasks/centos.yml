@@ -209,12 +209,12 @@
     state: restarted
   tags: [mysql]
   
-#- name: Semi-synchronous - Stop slave if running
-#  mysql_replication: 
-#     mode: stopslave
-#  # when: hostname.stdout.find('db-slave') == 0
-#  when: hostname.stdout.find('mysql-01')!=0
-#  tags: [mysql]
+- name: Semi-synchronous - Stop slave if running
+  mysql_replication: 
+     mode: stopslave
+  # when: hostname.stdout.find('db-slave') == 0
+  when: hostname.stdout.find('mysql-01')!=0
+  tags: [mysql]
   
 #- name: Semi-synchronous - Get the master status
 #  mysql_replication: 

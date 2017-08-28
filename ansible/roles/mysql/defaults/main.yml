@@ -7,4 +7,4 @@ mysql_slaves:
   - mysql-03
 mysql_slave_root_pass: vagrant
 mysql_master: mysql-01
-      
+group_seeds: 10.100.194.201:24901,10.100.194.202:24901,10.100.194.203:24901

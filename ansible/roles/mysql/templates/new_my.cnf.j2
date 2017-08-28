@@ -1,11 +1,6 @@
 # For advice on how to change settings please see
 # http://dev.mysql.com/doc/refman/5.7/en/server-configuration-defaults.html
 
-
-[client]
-user=root
-password={{ mysql_root_pass }}
-
 [mysqld]
 #
 # Remove leading # and set to the amount of RAM for the most important data
@@ -28,5 +23,32 @@ socket=/var/lib/mysql/mysql.sock
 # Disabling symbolic-links is recommended to prevent assorted security risks
 symbolic-links=0
 
+skip_name_resolve
+innodb_buffer_pool_size = 128M
+skip_name_resolve
+
+
 log-error=/var/log/mysqld.log
 pid-file=/var/run/mysqld/mysqld.pid
+
+### For Replication
+server_id="{{ generated_server_id.stdout }}" ### change in Node2 and Node3
+gtid_mode=ON
+enforce_gtid_consistency=ON
+master_info_repository=TABLE
+relay_log_info_repository=TABLE
+binlog_checksum=NONE
+log_slave_updates=ON
+log_bin=binlog
+binlog_format=ROW
+relay-log=relaylog
+### For Group Replication
+transaction_write_set_extraction=XXHASH64
+loose-group_replication_group_name="56ddc50b-c2d1-4c2f-985b-c98222d5b151"
+loose-group_replication_start_on_boot=off
+loose-group_replication_local_address="{{ looseGroupReplicationLocalAddress }}"  ### change in Node2 and Node3
+#loose-group_replication_local_address= "10.100.194.201:24901"  ### change in Node2 and Node3
+loose-group_replication_group_seeds="{{ group_seeds }}"
+#loose-group_replication_group_seeds= "10.100.194.201:24901,10.100.194.202:24901,10.100.194.203:24901"
+loose-group_replication_bootstrap_group= off
+loose-group_replication_single_primary_mode= off

@@ -20,11 +20,13 @@
     - mysql-community-common
     - mysql-community-libs
     - mysql-community-client
+    - mysql-community-libs-compat
     - mysql-community-server 
     - mysql-community-devel
     - perl-DBD-MySQL
     - gcc
     - sshpass
+  notify: restart mysql
   tags: [mysql]
 
 # - name: Install Percona Mysql RPM dependencies
@@ -46,7 +48,7 @@
 #     - sshpass
 #   tags: [mysql]
 
-- name:  pip  install pip
+- name:  update pip
   become: true
   pip:  
     name: pip
@@ -61,11 +63,6 @@
   ignore_errors: yes
   tags: [mysql]
 
-- name: mysql service is restarted [1]
-  service:
-    name: mysqld
-    state: restarted
-  tags: [mysql]
 
 # - name: Copy my.cnf to master
 #   copy: src="roles/dbtier/files/my.cnf.master" dest="/etc/percona-server.conf.d/mysqld.cnf" owner=root group=root mode=0644
@@ -136,71 +133,50 @@
      - '%'
   tags: [mysql]
 
-- name: register hostname
+- name: create variable (1)
+  set_fact:  
+      looseGroupReplicationLocalAddress: "{{ host_ip }}:24901"
+ # generated_server_id: "{{ 100 | random }}"     
+      count: 1
+  tags: [mysql]
+
+- name: craet generated_server_id
   shell: hostname
-  register: hostname
-  tags: [mysql]  
+  register: generated_server_id
+  tags: [mysql]
 
-- name: Semi-synchronous - Create replication user
-  mysql_user: 
-     name: "{{ mysql_rep_user }}"
-     password: "{{ mysql_rep_pass }}"
-     priv: "{{ mysql_rep_priv }}"
-     host: '%'
-     state: present
-  when: hostname.stdout.find('mysql-01') == 0
+# - name: create variable  (2)
+#   set_fact:  
+#     order_number: 1
+#   when:  hostvars[groups['mysql'][0]]['order_number'] is not   defined     
+#   tags: [mysql]
+
+# - name: create variable  (2)
+#   set_fact:  
+#       order_number: "{{ 1 + hostvars[groups['mysql'][0]]['order_number'] }}"
+#   when:  hostvars[groups['mysql'][0]]['order_number'] is    defined     
+#   tags: [mysql]
+
+
+# - name: display orderNumber 
+#   debug:
+#     msg: "orderNumber --  {{ order_number }} " 
+#   tags: [mysql]
+
+
+- name: display generated_id 
+  debug:
+    msg: "test --  {{ looseGroupReplicationLocalAddress }} ---{{ group_seeds }}-- {{ generated_server_id.stdout }}  " 
   tags: [mysql]
 
 
-- name: Semi-synchronous - Flush
-  shell: mysql --defaults-file=/root/.my.cnf -e "FLUSH PRIVILEGES";
-  shell: mysql --defaults-file=/root/.my.cnf -e "FLUSH TABLES WITH READ LOCK";
-  when: hostname.stdout.find('mysql-01') == 0
-  tags: [mysql]
 
-- name: Semi-synchronous - Dump all database
-  mysql_db: state=dump name=all target=/root/all_db_dump.sql
-  when: hostname.stdout.find('mysql-01') == 0
-  tags: [mysql]
-
-
-- name: Semi-synchronous - Send all_db_dump.sql
-  shell: " sshpass -p '{{ mysql_slave_root_pass }}' scp -o StrictHostKeyChecking=no /root/all_db_dump.sql root@{{ item }}:~/  "
-  with_items: "{{ mysql_slaves }}"
-  when: hostname.stdout.find('mysql-01') == 0
-  tags: [mysql]
-
-- name: Semi-synchronous - Stop slave if running
-  mysql_replication: 
-     mode: stopslave
-  # when: hostname.stdout.find('db-slave') == 0
-  when: hostname.stdout.find('mysql-01') != 0
-  tags: [mysql]
-
-- name: Semi-synchronous - Import all_db_dump.sql
-  shell: mysql --defaults-file=/root/.my.cnf < /root/all_db_dump.sql
-  # when: hostname.stdout.find('db-slave') == 0
-  when: hostname.stdout.find('mysql-01') != 0
-  tags: [mysql]
-
-- name: Semi-synchronous - Get the master status
-  mysql_replication: 
-    mode: getmaster
-  delegate_to: "{{ mysql_master }}"
-  register: binlog
-  # when: hostname.stdout.find('db-slave') == 0
-  when: hostname.stdout.find('mysql-01') != 0
-  tags: [mysql]
-
-- name: Semi-synchronous - Change the master
-  mysql_replication: 
-    mode: changemaster
-    master_host: "{{ mysql_master }}"
-    master_user: "{{ mysql_rep_user }}"
-    master_password: "{{ mysql_rep_pass }}"
-    master_log_file: "{{ binlog.File }}"
-    master_log_pos: "{{ binlog.Position }}"
-  # when: hostname.stdout.find('db-slave') == 0
-  when: hostname.stdout.find('mysql-01') != 0
-  tags: [mysql]
-
+- name: MySQL- my.cnf file to /etc/my.cnf"
+  template:
+    src: new_my.cnf.j2
+    dest: /etc/my.cnf
+    owner: "{{ linux_user.stdout }}"
+    group: "{{ linux_group.stdout }}"
+    mode: 0600
+  notify: restart mysql
+  tags: [mysql] 

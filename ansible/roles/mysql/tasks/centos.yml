@@ -134,6 +134,7 @@
      - ::1
      - localhost
      - '%'
+     - 10.100.194.204
   tags: [mysql]
 
 - name: register hostname
@@ -234,3 +235,17 @@
 #  # when: hostname.stdout.find('db-slave') == 0
 #  when: hostname.stdout.find('mysql-01') != 0
 #  tags: [mysql]
+
+- name: Replication-group - Configure the recovery credentials
+  shell: mysql -uroot  -Bse  "CHANGE MASTER TO MASTER_USER=\"{{ mysql_rep_user }}\", MASTER_PASSWORD=\"{{ mysql_rep_pass }}\"  FOR CHANNEL \"group_replication_recovery\";"
+  tags: [mysql]
+
+- name: Replication-group -  PLUGIN group_replication exist ?
+  shell: mysql -uroot   -Bse "SHOW PLUGINS;" | grep group_replication | awk '{print $2}'
+  register: plugin_status
+  tags: [mysql]
+
+- name: Replication-group - INSTALL PLUGIN group_replication
+  shell: mysql -uroot   -Bse "INSTALL PLUGIN group_replication SONAME \"group_replication.so\" ;"
+  when : " 'ACTIVE' not in plugin_status.stdout_lines" 
+  tags: [mysql]

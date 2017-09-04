@@ -1,3 +1,4 @@
 .vagrant
 ansible/mysql.retry
+ansible/cd.retry
 

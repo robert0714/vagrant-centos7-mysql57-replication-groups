@@ -43,17 +43,6 @@
     line: "{{ item.host_ip }} {{ item.host_name }}"
   with_items: "{{ hosts }}"
   tags: [common]
-
-# - name: Generate SSH keys
-#   shell: ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ""
-#   args:
-#     creates: /root/.ssh/id_rsa
-#   tags: [mysql]
-
-# - name: get all key
-#   shell: " sshpass  -p '{{ root_pass }}' ssh-copy-id -o StrictHostKeyChecking=no -i /root/.ssh/id_rsa.pub {{ item.host_ip }}"  
-#   with_items: "{{ hosts }}"
-#   tags: [mysql]
  
 
 - name: Services are not running

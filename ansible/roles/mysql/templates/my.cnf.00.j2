@@ -17,6 +17,7 @@
 # join_buffer_size = 128M
 # sort_buffer_size = 2M
 # read_rnd_buffer_size = 2M
+
 datadir=/var/lib/mysql
 socket=/var/lib/mysql/mysql.sock
 
@@ -31,7 +32,7 @@ pid-file=/var/run/mysqld/mysqld.pid
 innodb_buffer_pool_size=128M
 skip_name_resolve
 ### For Replication
-server_id=10 ### change in Node2 and Node3
+server_id={{ repl_server_id }} ### change in Node2 and Node3
 gtid_mode=ON
 enforce_gtid_consistency=ON
 master_info_repository=TABLE
@@ -45,7 +46,7 @@ relay-log=relaylog
 transaction_write_set_extraction=XXHASH64
 loose-group_replication_group_name="56ddc50b-c2d1-4c2f-985b-c98222d5b151"
 loose-group_replication_start_on_boot=off
-loose-group_replication_local_address="10.100.194.201:24901"  ### change in Node2 and Node3
+loose-group_replication_local_address="{{ repl_local_address }}"  ### change in Node2 and Node3
 
 loose-group_replication_group_seeds="10.100.194.201:24901,10.100.194.202:24902,10.100.194.203:24903"
 loose-group_replication_bootstrap_group= off

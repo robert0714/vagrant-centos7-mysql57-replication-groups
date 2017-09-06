@@ -1,10 +1,4 @@
 mysql_root_pass: MyNewPass4!
 mysql_rep_user: rpl_user
 mysql_rep_pass: MyNewPass4!
-mysql_rep_priv: '*.*:REPLICATION SLAVE,REPLICATION CLIENT'
-mysql_slaves: 
-  - mysql-02
-  - mysql-03
-mysql_slave_root_pass: vagrant
-mysql_master: mysql-01
-group_seeds: 10.100.194.201:24901,10.100.194.202:24901,10.100.194.203:24901
+mysql_rep_priv: '*.*:REPLICATION SLAVE,REPLICATION CLIENT' 

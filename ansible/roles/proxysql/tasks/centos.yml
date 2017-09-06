@@ -17,4 +17,11 @@
   shell: rpm -ivh https://github.com/sysown/proxysql/releases/download/v1.4.1/proxysql-1.4.1-1-centos7.x86_64.rpm
   tags: [proxysql]
 
- 
+- name: Copy proxysql.cnf file
+  template: 
+    src: proxysql.cnf.j2 
+    dest: /etc/proxysql.cnf
+    owner: root 
+    group: root 
+    mode: 0644
+  tags: [proxysql]

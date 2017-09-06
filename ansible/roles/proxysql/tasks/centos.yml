@@ -55,3 +55,61 @@
     mode: 0644
   when: usePercona == 0 
   tags: [proxysql]
+
+- name: whoami 
+  become: false
+  shell: whoami
+  register: linux_user
+  tags: [proxysql]
+
+- name: id -g -n
+  become: false
+  shell: id -g -n
+  register: linux_group
+  tags: [proxysql]
+
+- name: "ProxySQL Mysql: template: .my.cnf file to /home/{{ linux_user.stdout }}"
+  become: false
+  template:
+    src: new_my.cnf.j2
+    dest: "~/.my.cnf"
+    owner: "{{ linux_user.stdout }}"
+    group: "{{ linux_group.stdout }}"
+    mode: 0600
+  tags: [proxysql]
+ 
+
+- name: restart proxysql
+  service:
+    name: proxysql
+    state: restarted 
+  tags: [proxysql] 
+
+
+- name: check Adding cluster nodes to ProxySQL?
+  become: false
+  shell: mysql -u admin    -h  127.0.0.1  -P 6032   -Bse \
+        " SELECT * FROM mysql_servers where hostname='{{ item }}'  ;  "
+  with_items:
+    - 10.100.194.201
+    - 10.100.194.202
+    - 10.100.194.203
+  register: nodes
+  ignore_errors: yes 
+  tags: [proxysql]
+ 
+
+- name: node1 Adding  to ProxySQL ?
+  debug:
+    msg: "----------{{ item.item }}----{{ item.stdout }}--------------"
+  with_items: "{{ nodes.results }}" 
+  ignore_errors: yes 
+  tags: [proxysql] 
+
+- name: Adding cluster nodes to ProxySQL
+  become: false
+  shell: mysql -u admin  -h 127.0.0.1 -P 6032   -Bse \
+        "INSERT INTO mysql_servers(hostgroup_id, hostname, port) VALUES (0,'{{ item.item }}',3306); " 
+  when:   item.stdout.find( item.item ) != 0
+  with_items: "{{ nodes.results }}"
+  tags: [proxysql]  

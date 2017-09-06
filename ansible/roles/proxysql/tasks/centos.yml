@@ -1,20 +1,49 @@
 - name: Add Mysql repository
   yum: name=http://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+  when: usePercona == 0 
   tags: [mysql]
 
-- name: Install proxysql RPM dependencies
+
+- name: Add Percona Server Mysql repository
+  yum: name=http://www.percona.com/downloads/percona-release/redhat/0.1-4/percona-release-0.1-4.noarch.rpm
+  when: usePercona == 1 
+  tags: [mysql]  
+
+- name: Install community proxysql  RPM dependencies
+  yum: 
+    name: mysql-community-client
+    state: present
+  when: usePercona == 0 
+  tags: [proxysql]
+
+- name: Install Percona proxysql RPM dependencies
+  yum: 
+    name: Percona-Server-client-57
+    state: present
+  when: usePercona == 1 
+  tags: [proxysql]
+
+- name: Install proxysql common RPM dependencies
   become: true
   yum: name={{ item }} state=present
   with_items:
     - glib2-devel
     - openssl-devel
-    - mysql-community-client
     - perl-DBD-MySQL
   tags: [proxysql]
 
-- name: Install proxysql RPM 
+- name: Install Percona proxysql RPM 
+  yum: 
+    name: proxysql
+    state: present
+  when: usePercona == 1 
+  tags: [proxysql]
+
+
+- name: Install  community  proxysql RPM 
   become: true
   shell: rpm -ivh https://github.com/sysown/proxysql/releases/download/v1.4.1/proxysql-1.4.1-1-centos7.x86_64.rpm
+  when: usePercona == 0 
   tags: [proxysql]
 
 - name: Copy proxysql.cnf file
@@ -24,4 +53,5 @@
     owner: root 
     group: root 
     mode: 0644
+  when: usePercona == 0 
   tags: [proxysql]

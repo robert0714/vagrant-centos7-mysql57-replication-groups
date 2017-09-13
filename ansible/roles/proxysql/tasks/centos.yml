@@ -42,7 +42,7 @@
 
 - name: Install  community  proxysql RPM 
   become: true
-  shell: rpm -ivh https://github.com/sysown/proxysql/releases/download/v1.4.1/proxysql-1.4.1-1-centos7.x86_64.rpm
+  shell: rpm -Uvh https://github.com/sysown/proxysql/releases/download/v1.4.2/proxysql-1.4.2-1-dbg-centos7.x86_64.rpm
   when: usePercona == 0 
   tags: [proxysql]
 
@@ -75,6 +75,14 @@
     dest: "~/.my.cnf"
     owner: "{{ linux_user.stdout }}"
     group: "{{ linux_group.stdout }}"
+    mode: 0600
+  tags: [proxysql]
+
+- name: "ProxySQL Mysql: template: .my.cnf file to /root/"
+  become: true
+  template:
+    src: new_my.cnf.j2
+    dest: "/root/.my.cnf" 
     mode: 0600
   tags: [proxysql]
  

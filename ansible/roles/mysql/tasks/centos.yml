@@ -173,46 +173,6 @@
   when: master is defined
   tags: [mysql]
 
-- name: mysql service is restarted [1]
-  service:
-    name: mysqld
-    state: restarted
-  tags: [mysql]
-  
-- name: Semi-synchronous - Stop slave if running
-  mysql_replication: 
-     mode: stopslave 
-  when: master is not defined
-  tags: [mysql]
-  
-#- name: Semi-synchronous - Get the master status
-#  mysql_replication: 
-#    mode: getmaster
-#  delegate_to: "{{ mysql_master }}"
-#  register: binlog
-#  # when: hostname.stdout.find('db-slave') == 0
-#  when: master is not defined
-#  tags: [mysql]
-  
-#- name: Semi-synchronous - Change the master
-#  mysql_replication: 
-#    mode: changemaster
-#    master_host: "{{ mysql_master }}"
-#    master_user: "{{ mysql_rep_user }}"
-#    master_password: "{{ mysql_rep_pass }}" 
-#  # when: hostname.stdout.find('db-slave') == 0
-#  when: master is not defined
-#  tags: [mysql]
-
-- name: Replication-group - Configure the recovery credentials
-  shell: mysql -uroot  -Bse  "CHANGE MASTER TO MASTER_USER=\"{{ mysql_rep_user }}\", MASTER_PASSWORD=\"{{ mysql_rep_pass }}\"  FOR CHANNEL \"group_replication_recovery\";"
-  tags: [mysql]
- 
-- name: Replication-group -  PLUGIN group_replication exist ?
-  shell: mysql -uroot   -Bse "SHOW PLUGINS;" | grep group_replication | awk '{print $2}'
-  register: plugin_status
-  tags: [mysql]
-
 - name: Replication-group - INSTALL PLUGIN group_replication
   shell: mysql -uroot   -Bse "INSTALL PLUGIN group_replication SONAME \"group_replication.so\" ;"
   when : " 'ACTIVE' not in plugin_status.stdout_lines" 
@@ -223,6 +183,28 @@
   shell: mysql -uroot   -Bse "SELECT * FROM performance_schema.replication_group_members\G;" | grep MEMBER_STATE | awk '{print $2}'
   register: rg_status
   tags: [mysql]
+
+
+- name: mysql service is restarted [1]
+  service:
+    name: mysqld
+    state: restarted
+  when: "  'OFFLINE'  in rg_status.stdout_lines" 
+  tags: [mysql]
+  
+ 
+ 
+
+- name: Replication-group - Configure the recovery credentials
+  shell: mysql -uroot  -Bse  "CHANGE MASTER TO MASTER_USER=\"{{ mysql_rep_user }}\", MASTER_PASSWORD=\"{{ mysql_rep_pass }}\"  FOR CHANNEL \"group_replication_recovery\";"
+  tags: [mysql]
+ 
+- name: Replication-group -  PLUGIN group_replication exist ?
+  shell: mysql -uroot   -Bse "SHOW PLUGINS;" | grep group_replication | awk '{print $2}'
+  register: plugin_status
+  tags: [mysql]
+
+
 
 
 - name: Replication-group -  Master start in  group_replication  
@@ -240,15 +222,6 @@
   tags: [mysql]
 
 
-- name:  To provide read/write access to the cluster for ProxySQL, add this user on one of the Percona XtraDB Cluster nodes
-  mysql_user: 
-     name: "{{ proxysql_user }}"
-     password: "{{ proxysql_user_passwd }}"
-     priv: '*.*:ALL,GRANT'    
-     host: '%'
-     state: present
-  when: master is defined
-  tags: [mysql]
 
  
 - name:  To provide read/write access to the cluster for ProxySQL, add this user on one of the Percona XtraDB Cluster nodes
@@ -265,8 +238,10 @@
      - ::1
      - localhost
      - '%'
+     - 10.100.194.1
      - 10.100.194.201
      - 10.100.194.202
      - 10.100.194.203
   tags: [mysql]
  
+

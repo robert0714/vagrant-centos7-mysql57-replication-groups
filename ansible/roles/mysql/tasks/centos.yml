@@ -167,7 +167,7 @@
   tags: [mysql]
 
 
-- name: Semi-synchronous - Flush
+- name: replication group - Flush
   shell: mysql --defaults-file=/root/.my.cnf -e "FLUSH PRIVILEGES";
   shell: mysql --defaults-file=/root/.my.cnf -e "FLUSH TABLES WITH READ LOCK";
   when: master is defined
@@ -238,3 +238,35 @@
   register: master_node_
   when: "  master is not  defined and 'OFFLINE'  in rg_status.stdout_lines   "
   tags: [mysql]
+
+
+- name:  To provide read/write access to the cluster for ProxySQL, add this user on one of the Percona XtraDB Cluster nodes
+  mysql_user: 
+     name: "{{ proxysql_user }}"
+     password: "{{ proxysql_user_passwd }}"
+     priv: '*.*:ALL,GRANT'    
+     host: '%'
+     state: present
+  when: master is defined
+  tags: [mysql]
+
+ 
+- name:  To provide read/write access to the cluster for ProxySQL, add this user on one of the Percona XtraDB Cluster nodes
+  become: false
+  mysql_user: 
+      name: "{{ proxysql_user }}"
+      password: "{{ proxysql_user_passwd }}"
+      priv: '*.*:ALL,GRANT' 
+      host: "{{ item }}"
+      state: present 
+  with_items:
+     - "{{ ansible_hostname }}"
+     - 127.0.0.1
+     - ::1
+     - localhost
+     - '%'
+     - 10.100.194.201
+     - 10.100.194.202
+     - 10.100.194.203
+  tags: [mysql]
+ 

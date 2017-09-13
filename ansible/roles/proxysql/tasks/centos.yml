@@ -85,6 +85,13 @@
     state: restarted 
   tags: [proxysql] 
 
+- name: mysql nodes ready ?
+  shell: ping -c 1 10.100.194.201;ping -c 1 10.100.194.202;ping -c 1 10.100.194.203 
+  register: nodes_is_ready
+  ignore_errors: yes 
+  tags: [proxysql]
+
+
 
 - name: check Adding cluster nodes to ProxySQL?
   become: false
@@ -97,7 +104,6 @@
   register: nodes
   ignore_errors: yes 
   tags: [proxysql]
- 
 
 - name: node1 Adding  to ProxySQL ?
   debug:
@@ -113,3 +119,20 @@
   when:   item.stdout.find( item.item ) != 0
   with_items: "{{ nodes.results }}"
   tags: [proxysql]  
+
+
+- name: Creating ProxySQL Client User
+  become: false
+  shell: mysql -u admin  -h 127.0.0.1 -P 6032   -Bse \
+        " INSERT INTO mysql_users (username,password) VALUES (\'{{ proxysql_user }}\',\'{{ proxysql_user_passwd }}\');\
+        LOAD MYSQL USERS TO RUNTIME;SAVE MYSQL USERS TO DISK; "   
+  tags: [proxysql]  
+
+# - name: To provide read/write access to the cluster for ProxySQL, add this user on one of the Percona XtraDB Cluster nodes
+#   become: false
+#   shell: mysql -u admin  -h 10.100.194.201   -Bse \
+#         "   "   
+#   tags: [proxysql]  
+
+
+  

@@ -13,4 +13,6 @@ centos_files: [
      { src: "my.cnf", dest: "/etc/my.cnf" },
   ]
 
-usePercona: 1
+usePercona: 0
+proxysql_user: sbuser
+proxysql_user_passwd: MyNewPass4!

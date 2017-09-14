@@ -55,4 +55,5 @@ Warning: Using a password on the command line interface can be insecure.
 Warning: Using a password on the command line interface can be insecure.
 Warning: Using a password on the command line interface can be insecure.
 ```
-
+# ProxySQL notice
+we cannot use ansible to set user of proxysql because of security

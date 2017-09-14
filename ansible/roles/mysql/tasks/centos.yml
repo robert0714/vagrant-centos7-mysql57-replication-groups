@@ -173,44 +173,49 @@
   when: master is defined
   tags: [mysql]
 
-- name: Replication-group - INSTALL PLUGIN group_replication
-  shell: mysql -uroot   -Bse "INSTALL PLUGIN group_replication SONAME \"group_replication.so\" ;"
-  when : " 'ACTIVE' not in plugin_status.stdout_lines" 
-  tags: [mysql]
-
-
 - name: Replication-group -  performance_schema.replication_group_members status ?
   shell: mysql -uroot   -Bse "SELECT * FROM performance_schema.replication_group_members\G;" | grep MEMBER_STATE | awk '{print $2}'
   register: rg_status
   tags: [mysql]
 
-
-- name: mysql service is restarted [1]
-  service:
-    name: mysqld
-    state: restarted
-  when: "  'OFFLINE'  in rg_status.stdout_lines" 
-  tags: [mysql]
-  
- 
- 
-
-- name: Replication-group - Configure the recovery credentials
-  shell: mysql -uroot  -Bse  "CHANGE MASTER TO MASTER_USER=\"{{ mysql_rep_user }}\", MASTER_PASSWORD=\"{{ mysql_rep_pass }}\"  FOR CHANNEL \"group_replication_recovery\";"
-  tags: [mysql]
- 
 - name: Replication-group -  PLUGIN group_replication exist ?
   shell: mysql -uroot   -Bse "SHOW PLUGINS;" | grep group_replication | awk '{print $2}'
   register: plugin_status
   tags: [mysql]
 
+- name: display rg_status[1]
+  debug:
+    msg: "  {{ rg_status }} "  
+  tags: [mysql]
 
+- name: display rg_status[2]
+  debug:
+    msg: "  {{ rg_status.stdout.find('ONLINE') }} "  
+  tags: [mysql]
+
+
+- name: mysql service is restarted in order to install group_replication plugin
+  service:
+    name: mysqld
+    state: restarted
+  when:   rg_status.stdout.find('ONLINE')  == -1
+  tags: [mysql]
+  
+- name: Replication-group - INSTALL PLUGIN group_replication
+  shell: mysql -uroot   -Bse "INSTALL PLUGIN group_replication SONAME \"group_replication.so\" ;"
+  when : plugin_status.stdout.find('ACTIVE')  == -1  
+  tags: [mysql]
+
+
+- name: Replication-group - Configure the recovery credentials
+  shell: mysql -uroot  -Bse  "CHANGE MASTER TO MASTER_USER=\"{{ mysql_rep_user }}\", MASTER_PASSWORD=\"{{ mysql_rep_pass }}\"  FOR CHANNEL \"group_replication_recovery\";"
+  tags: [mysql]
 
 
 - name: Replication-group -  Master start in  group_replication  
   shell: mysql -uroot   -Bse "SET GLOBAL group_replication_bootstrap_group=ON; START GROUP_REPLICATION; SET GLOBAL group_replication_bootstrap_group=OFF; " 
   register: master_node_
-  when: " master is   defined    and  'OFFLINE'  in rg_status.stdout_lines"
+  when: " master is   defined    and   rg_status.stdout.find('ONLINE')  == -1 "
   tags: [mysql]
 
 
@@ -218,7 +223,7 @@
 - name: Replication-group -  Slave start in  group_replication  
   shell: mysql -uroot   -Bse "RESET MASTER; START GROUP_REPLICATION;  " 
   register: master_node_
-  when: "  master is not  defined and 'OFFLINE'  in rg_status.stdout_lines   "
+  when: "  master is not  defined and   rg_status.stdout.find('ONLINE')  == -1    "
   tags: [mysql]
 
 

@@ -42,7 +42,8 @@
 
 - name: Install  community  proxysql RPM 
   become: true
-  shell: rpm -Uvh https://github.com/sysown/proxysql/releases/download/v1.4.2/proxysql-1.4.2-1-dbg-centos7.x86_64.rpm
+  yum: state=present name=https://github.com/sysown/proxysql/releases/download/v1.4.2/proxysql-1.4.2-1-dbg-centos7.x86_64.rpm 
+  # shell: rpm -Uvh https://github.com/sysown/proxysql/releases/download/v1.4.2/proxysql-1.4.2-1-dbg-centos7.x86_64.rpm
   when: usePercona == 0 
   tags: [proxysql]
 
@@ -93,6 +94,13 @@
     state: restarted 
   tags: [proxysql] 
 
+
+- name: Creating ProxySQL Client User
+  become: false
+  shell: mysql -u admin  -h 127.0.0.1 -P 6032   -Bse \
+        " INSERT INTO mysql_users (username,password) VALUES (\'{{ proxysql_user }}\',\'{{ proxysql_user_passwd }}\') ;LOAD MYSQL USERS TO RUNTIME;SAVE MYSQL USERS TO DISK; "   
+  tags: [proxysql] 
+
 - name: mysql nodes ready ?
   shell: ping -c 1 10.100.194.201;ping -c 1 10.100.194.202;ping -c 1 10.100.194.203 
   register: nodes_is_ready
@@ -129,12 +137,7 @@
   tags: [proxysql]  
 
 
-- name: Creating ProxySQL Client User
-  become: false
-  shell: mysql -u admin  -h 127.0.0.1 -P 6032   -Bse \
-        " INSERT INTO mysql_users (username,password) VALUES (\'{{ proxysql_user }}\',\'{{ proxysql_user_passwd }}\');\
-        LOAD MYSQL USERS TO RUNTIME;SAVE MYSQL USERS TO DISK; "   
-  tags: [proxysql]  
+ 
 
 # - name: To provide read/write access to the cluster for ProxySQL, add this user on one of the Percona XtraDB Cluster nodes
 #   become: false

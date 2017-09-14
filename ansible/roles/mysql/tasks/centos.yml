@@ -60,10 +60,10 @@
   ignore_errors: yes
   tags: [mysql]
 
-- name: mysql service is restarted [1]
+- name: mysql service is started 
   service:
     name: mysqld
-    state: restarted
+    state: started
   tags: [mysql]
  
 

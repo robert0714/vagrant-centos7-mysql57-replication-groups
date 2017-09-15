@@ -2,9 +2,9 @@
 10.100.194.20[1:4]  
 
 [mysql]
-10.100.194.201  master=true repl_server_id=10  repl_local_address=10.100.194.201:24901
-10.100.194.202  repl_server_id=20 repl_local_address=10.100.194.202:24902
-10.100.194.203  repl_server_id=30 repl_local_address=10.100.194.203:24903
+10.100.194.201  master=true repl_server_id=10  repl_local_address=10.100.194.201:24901 repl_local_rg_seed="10.100.194.201:24901,10.100.194.202:24902,10.100.194.203:24903"
+10.100.194.202  repl_server_id=20 repl_local_address=10.100.194.202:24902 repl_local_rg_seed="10.100.194.201:24901,10.100.194.202:24902,10.100.194.203:24903"
+10.100.194.203  repl_server_id=30 repl_local_address=10.100.194.203:24903 repl_local_rg_seed="10.100.194.201:24901,10.100.194.202:24902,10.100.194.203:24903"
 
 [proxySQL]
 10.100.194.204

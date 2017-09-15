@@ -50,6 +50,6 @@ loose-group_replication_group_name="56ddc50b-c2d1-4c2f-985b-c98222d5b151"
 loose-group_replication_start_on_boot=off
 loose-group_replication_local_address="{{ repl_local_address }}"  ### change in Node2 and Node3
 
-loose-group_replication_group_seeds="10.100.194.201:24901,10.100.194.202:24902,10.100.194.203:24903"
+loose-group_replication_group_seeds="{{ repl_local_rg_seed }}"
 loose-group_replication_bootstrap_group= off
 loose-group_replication_single_primary_mode= off

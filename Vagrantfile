@@ -7,7 +7,7 @@ Vagrant.configure(2) do |config|
   else
     config.vm.synced_folder ".", "/vagrant"
   end
-  config.vm.box = "bento/centos-7.3"
+  config.vm.box = "bento/centos-7.4"
   (1..3).each do |i|
     config.vm.define "mysql-0#{i}" do |d|
       d.vm.hostname = "mysql-0#{i}"

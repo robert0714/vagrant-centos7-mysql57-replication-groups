@@ -42,8 +42,9 @@
 
 - name: Install  community  proxysql RPM 
   become: true
-  yum: state=present name=https://github.com/sysown/proxysql/releases/download/v1.4.2/proxysql-1.4.2-1-dbg-centos7.x86_64.rpm 
+  yum: state=present name=https://github.com/sysown/proxysql/releases/download/v1.4.4/proxysql-1.4.4-1-dbg-centos7.x86_64.rpm
   # shell: rpm -Uvh https://github.com/sysown/proxysql/releases/download/v1.4.2/proxysql-1.4.2-1-dbg-centos7.x86_64.rpm
+                    
   when: usePercona == 0 
   tags: [proxysql]
 

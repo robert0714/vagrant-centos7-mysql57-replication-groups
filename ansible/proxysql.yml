@@ -1,0 +1,6 @@
+- hosts: proxySQL
+  remote_user: vagrant
+  serial: 1
+  roles:    
+    - proxysql
+
